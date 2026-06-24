@@ -1397,3 +1397,45 @@ setTimeout(() => {
   initKeyboardShortcuts();
   initProgressSaving();
 }, 100);
+
+/* ═══════════════════════════════════════════════════════════
+   GLOBAL PROGRESS SYNC
+   ═══════════════════════════════════════════════════════════ */
+
+window.updateNavbarCounters = function() {
+  const widget = document.getElementById("global-progress-widget");
+  const levelDisplay = document.getElementById("nav-level-display");
+  const xpFill = document.getElementById("nav-xp-fill");
+  const xpText = document.getElementById("nav-xp-text");
+
+  if (!widget) return;
+
+  try {
+    const rawData = localStorage.getItem("db_gameState");
+    if (rawData) {
+      const data = JSON.parse(rawData);
+      const level = data.level || 1;
+      const xp = data.xp || 0;
+      const nextLevelXP = level * 500;
+      
+      levelDisplay.textContent = `Lvl ${level}`;
+      xpText.textContent = `${xp} / ${nextLevelXP} XP`;
+      
+      const percentage = Math.min((xp / nextLevelXP) * 100, 100);
+      xpFill.style.width = `${percentage}%`;
+      
+      widget.style.display = "flex";
+    } else {
+      widget.style.display = "none";
+    }
+  } catch (err) {
+    console.error("Error reading db_gameState:", err);
+  }
+};
+
+// Initial call to set it up if already logged in and cache exists
+document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("db_gameState")) {
+    window.updateNavbarCounters();
+  }
+});
